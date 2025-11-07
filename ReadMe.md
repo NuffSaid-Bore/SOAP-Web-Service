@@ -106,10 +106,13 @@ The `@Endpoint` class handles SOAP requests.
 `@PayloadRoot` maps incoming XML to the correct method based on the **namespace** and **root element**.
 
 ```java
-@Endpoint
+Endpoint
 public class CustomerController {
 
     private static final String NAMESPACE_URI = "http://example.com/soap_demo";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomerController.class);
+
     private final CustomerService customerService;
 
     public CustomerController(CustomerService customerService) {
@@ -120,11 +123,16 @@ public class CustomerController {
     @ResponsePayload
     public GetCustomerResponse getCustomer(@RequestPayload GetCustomerRequest request) {
         Customer customer = customerService.getCustomerById(request.getId());
+        LOGGER.info("Sending request for customer ID: {}", request.getId());
         GetCustomerResponse response = new GetCustomerResponse();
         response.setCustomer(customer);
+
         return response;
     }
+
+
 }
+
 ```
 
 ---
@@ -136,7 +144,7 @@ The `WebServiceConfig` class defines how the WSDL and schema are exposed.
 ```java
 @EnableWs
 @Configuration
-public class WebServiceConfig {
+public class webServiceConfig {
 
     @Bean
     public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(ApplicationContext context) {
@@ -146,14 +154,15 @@ public class WebServiceConfig {
         return new ServletRegistrationBean<>(servlet, "/ws/*");
     }
 
+
     @Bean(name = "customers")
     public DefaultWsdl11Definition defaultWsdl11Definition(XsdSchema customerSchema) {
-        DefaultWsdl11Definition definition = new DefaultWsdl11Definition();
-        definition.setPortTypeName("CustomerPort");
-        definition.setLocationUri("/ws");
-        definition.setTargetNamespace("http://example.com/soap_demo");
-        definition.setSchema(customerSchema);
-        return definition;
+        DefaultWsdl11Definition wsdl11Definition = new DefaultWsdl11Definition();
+        wsdl11Definition.setPortTypeName("CustomerPort");
+        wsdl11Definition.setLocationUri("/ws");
+        wsdl11Definition.setTargetNamespace("http://example.com/soap_demo");
+        wsdl11Definition.setSchema(customerSchema);
+        return wsdl11Definition;
     }
 
     @Bean
@@ -180,16 +189,19 @@ public class SoapClientConfig {
     public Jaxb2Marshaller marshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         marshaller.setClassesToBeBound(
-            Customer.class,
-            GetCustomerRequest.class,
-            GetCustomerResponse.class
+                com.example.soap_demo.model.Customer.class,
+                com.example.soap_demo.model.GetCustomerRequest.class,
+                com.example.soap_demo.model.GetCustomerResponse.class
         );
         return marshaller;
     }
 
+
+
     @Bean
     public WebServiceTemplate webServiceTemplate(Jaxb2Marshaller marshaller) {
         WebServiceTemplate template = new WebServiceTemplate();
+        template.setCheckConnectionForFault(true);
         template.setMarshaller(marshaller);
         template.setUnmarshaller(marshaller);
         template.setDefaultUri("http://localhost:8080/ws");
@@ -212,13 +224,17 @@ public class CustomerClient {
         this.webServiceTemplate = webServiceTemplate;
     }
 
+
     public Customer getCustomer(int id) {
         GetCustomerRequest request = new GetCustomerRequest();
         request.setId(id);
+
         GetCustomerResponse response = (GetCustomerResponse)
                 webServiceTemplate.marshalSendAndReceive(request);
+
         return response.getCustomer();
     }
+
 }
 ```
 
@@ -230,19 +246,29 @@ public class CustomerClient {
 @SpringBootApplication
 public class SoapDemoApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SoapDemoApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(SoapDemoApplication.class, args);
+	}
+
+//    Cab be trigger by running:
+//    Start and trigger the client manually
+//    mvn spring-boot:run -Dspring-boot.run.arguments=client
 
     @Bean
     CommandLineRunner lookup(CustomerClient client) {
         return args -> {
-            System.out.println("Sending SOAP request for customer ID 1...");
-            Customer customer = client.getCustomer(1);
-            System.out.println("Received response: ID=" + customer.getId() + ", Name=" + customer.getName());
+            if (args.length > 0 && args[0].equalsIgnoreCase("client")) {
+                System.out.println("Sending SOAP request for customer ID 1...");
+                Customer customer = client.getCustomer(1);
+                System.out.println("Received response: ID=" + customer.getId() + ", Name=" + customer.getName());
+            } else {
+                System.out.println("SOAP service started. Waiting for external requests (e.g., from SOAP UI)...");
+            }
         };
     }
+
 }
+
 ```
 
 When you run the app, it automatically sends a SOAP request at startup.
