@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://example.com/soapdemo"
-           xmlns:tns="http://example.com/soapdemo"
+           targetNamespace="http://example.com/soap_demo"
+           xmlns:tns="http://example.com/soap_demo"
            elementFormDefault="qualified">
 
     <xs:element name="getCustomerRequest">

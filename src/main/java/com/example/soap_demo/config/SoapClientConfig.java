@@ -25,6 +25,7 @@ public class SoapClientConfig {
     @Bean
     public WebServiceTemplate webServiceTemplate(Jaxb2Marshaller marshaller) {
         WebServiceTemplate template = new WebServiceTemplate();
+        template.setCheckConnectionForFault(true);
         template.setMarshaller(marshaller);
         template.setUnmarshaller(marshaller);
         template.setDefaultUri("http://localhost:8080/ws");
