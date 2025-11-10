@@ -1,8 +1,6 @@
 package com.example.soap_demo.controller;
 
-import com.example.soap_demo.model.Customer;
-import com.example.soap_demo.model.GetCustomerRequest;
-import com.example.soap_demo.model.GetCustomerResponse;
+import com.example.soap_demo.model.*;
 import com.example.soap_demo.service.CustomerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +26,23 @@ public class CustomerController {
     @PayloadRoot(namespace = NAMESPACE_URI, localPart = "getCustomerRequest")
     @ResponsePayload
     public GetCustomerResponse getCustomer(@RequestPayload GetCustomerRequest request) {
-        Customer customer = customerService.getCustomerById(request.getId());
+        Customer customer = customerService.getCustomersById(request.getId());
         LOGGER.info("Sending request for customer ID: {}", request.getId());
         GetCustomerResponse response = new GetCustomerResponse();
         response.setCustomer(customer);
 
         return response;
     }
+
+    @PayloadRoot(namespace = NAMESPACE_URI, localPart = "getAllCustomersRequest")
+    @ResponsePayload
+    public GetAllCustomersResponse getAllCustomers(@RequestPayload GetAllCustomersRequest request) {
+        LOGGER.info("Received SOAP request to get all customers");
+        GetAllCustomersResponse response = new GetAllCustomersResponse();
+        response.getCustomers().addAll(customerService.getAllCustomers());
+        return response;
+    }
+
 
 
 }

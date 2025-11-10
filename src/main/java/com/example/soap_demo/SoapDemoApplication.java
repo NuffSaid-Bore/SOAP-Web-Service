@@ -14,9 +14,15 @@ public class SoapDemoApplication {
 		SpringApplication.run(SoapDemoApplication.class, args);
 	}
 
-//    Cab be trigger by running:
+//    Can be trigger by running:
 //    Start and trigger the client manually
-//    mvn spring-boot:run -Dspring-boot.run.arguments=client
+//     for Powershell
+//    mvn spring-boot:run "-Dspring-boot.run.arguments=client"
+    // for CMD
+    // mvn spring-boot:run -Dspring-boot.run.arguments=client
+
+    // You can pass Arguments
+    // mvn spring-boot:run "-Dspring-boot.run.arguments=client 5"
 
     @Bean
     CommandLineRunner lookup(CustomerClient client) {
